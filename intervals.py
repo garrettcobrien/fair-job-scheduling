@@ -56,7 +56,6 @@ class Interval:
     def __repr__(self):
         return f'(N:{self.name}, R:{self.release}, D:{self.deadline}, P:{self.processing}, U:{self.utility})'
 
-
 class MWIS:
     def __init__(self, intervals: list[Interval]) -> None:
         self.intervals = intervals
@@ -71,8 +70,13 @@ class MWIS:
         self.sol = []
         self.solution(len(self.intervals)-1, self.intervals[-1].deadline)
 
+        print(self.sol)
+
 
     def schedule(self, j, currentTime):
+        if j < 0:
+            return 0
+               
         if self.opt[j] != -1:
             return self.opt[j]
         
@@ -91,17 +95,20 @@ class MWIS:
 
 
     def compatible(self, j, currentTime):
+        #Start with jobs after current
+        j -= 1
+
         while j >= 0:
             if self.intervals[j].release + self.intervals[j].processing <= currentTime:
                 return j
             j -= 1
 
-        return 0
+        return -1
 
     
     def solution(self, j, currentTime):
         scheduled_time = currentTime - self.intervals[j].processing
-        if j != 0:
+        if j >= 0:
             if self.intervals[j].utility + self.opt[self.compatible(j, scheduled_time)] > self.opt[j-1]:
                 #print(self.intervals[j])
                 self.sol.append((j, scheduled_time, currentTime, self.intervals[j].name))
@@ -111,6 +118,7 @@ class MWIS:
                 self.solution(j-1, currentTime)
 
 
+
 if __name__ == "__main__":
     np.random.seed(42)
     # Parameters
@@ -118,7 +126,7 @@ if __name__ == "__main__":
     m = 1  # Size of the utility vector
     time_range = (1, 25)
     max_processing_time = 10
-    utility_range = (1, 10)  # Utility values will be integers between 1 and 100
+    utility_range = (1, 10)
 
     interval_data = generate_interval_scheduling_data(n, m, time_range, max_processing_time, utility_range)
 
