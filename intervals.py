@@ -134,6 +134,10 @@ class multipleScheduling:
     def schedule(self, j, currentTime1, currentTime2):
         if j < 0:
             return 0
+
+        # currentTime1 and currentTime2 are within bounds of the array dimensions
+        if currentTime1 >= len(self.opt[0]) or currentTime2 >= len(self.opt[0]):
+            return 0
                
         if self.opt[j][currentTime1][currentTime2] != -1:
             return self.opt[j][currentTime1][currentTime2]
@@ -198,7 +202,9 @@ if __name__ == "__main__":
 
     mDim_intervals = []
     for i, row in mDim_interval_data.iterrows():
-        interval = Interval(row['Name'], row['Release Time'], row['Deadline'], row['Processing Time'], row['Utility_1'])
+        # collect utility vector for each machine
+        utility = [row['Utility_1'], row['Utility_2']]
+        interval = Interval(row['Name'], row['Release Time'], row['Deadline'], row['Processing Time'], utility)
         mDim_intervals.append(interval)
 
     ms = multipleScheduling(mDim_intervals, 3)
