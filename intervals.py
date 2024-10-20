@@ -122,44 +122,43 @@ class multipleScheduling:
         self.intervals = intervals
         self.intervals.sort()
 
-        #flattened dp array
-        self.opt = [-1] * len(intervals)
         currentTime = self.intervals[-1].deadline
-        self.opt = np.full((m, currentTime, currentTime), -1)
-        print(self.opt)
-        #first dimension is job index, next is current time
-        for i in range(m + 1):
-            self.opt *= m
+        self.opt = np.full((len(self.intervals), currentTime, currentTime), -1)
 
-        #self.schedule(len(self.intervals)-1, self.intervals[-1].deadline)
+        self.schedule(len(self.intervals)-1, self.intervals[-1].deadline, self.intervals[-1].deadline)
 
         print(self.opt)
 
 
 
-    def schedule(self, j, currentTime):
+    def schedule(self, j, currentTime1, currentTime2):
         if j < 0:
             return 0
                
-        if self.opt[j] != -1:
-            return self.opt[j]
+        if self.opt[j][currentTime1][currentTime2] != -1:
+            return self.opt[j][currentTime1][currentTime2]
         
         #time it's actually scheduled
-        scheduled_time = currentTime - self.intervals[j].processing
+        scheduled_time1 = currentTime1 - self.intervals[j].processing
+        scheduled_time2 = currentTime2 - self.intervals[j].processing
+
 
         #not compatible
-        if scheduled_time < 0:
-            self.opt[j] = 0
+        if scheduled_time1 < 0 and scheduled_time2 < 0:
+            self.opt[j][currentTime1][currentTime2] = 0
             return 0
 
-        self.opt[j] = max(self.intervals[j].utility + self.schedule(self.compatible(j, scheduled_time), scheduled_time),
-                        self.schedule(j-1, currentTime))
+        #schedule job j on machine 1
+        m1 = self.intervals[j].utility[0] + self.schedule(self.compatible(j, scheduled_time1), scheduled_time1, currentTime2)
+        #schedule job j on machine 2
+        m2 = self.intervals[j].utility[1] + self.schedule(self.compatible(j, scheduled_time2), currentTime1, scheduled_time2)
+        #don't schedule on either
+        next_job = self.schedule(j-1, currentTime1, currentTime2)
+
+
+        self.opt[j][currentTime1][currentTime2] = max(m1, m2, next_job)
         
-
-        for i in range(m):
-            index = 0
-
-        return self.opt[j]
+        return self.opt[j][currentTime1][currentTime2]
 
 
     def compatible(self, j, currentTime):
@@ -182,7 +181,13 @@ if __name__ == "__main__":
     max_processing_time = 10
     utility_range = (1, 10)
 
+
     interval_data = generate_interval_scheduling_data(n, m, time_range, max_processing_time, utility_range)
+
+    #2d
+    m = 2
+    mDim_interval_data = generate_interval_scheduling_data(n, m, time_range, max_processing_time, utility_range)
+
 
     intervals = []
     for i, row in interval_data.iterrows():
@@ -191,7 +196,12 @@ if __name__ == "__main__":
 
     mwis = MWIS(intervals)
 
-    ms = multipleScheduling(intervals, 3)
+    mDim_intervals = []
+    for i, row in mDim_interval_data.iterrows():
+        interval = Interval(row['Name'], row['Release Time'], row['Deadline'], row['Processing Time'], row['Utility_1'])
+        mDim_intervals.append(interval)
+
+    ms = multipleScheduling(mDim_intervals, 3)
 
 
     interval_data['release_plus_processing'] = interval_data['Release Time'] + interval_data['Processing Time']
