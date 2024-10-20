@@ -117,7 +117,61 @@ class MWIS:
             else:
                 self.solution(j-1, currentTime)
 
+class multipleScheduling:
+    def __init__(self, intervals: list[Interval], m) -> None:
+        self.intervals = intervals
+        self.intervals.sort()
 
+        #flattened dp array
+        self.opt = [-1] * len(intervals)
+        currentTime = self.intervals[-1].deadline
+        self.opt = np.full((m, currentTime, currentTime), -1)
+        print(self.opt)
+        #first dimension is job index, next is current time
+        for i in range(m + 1):
+            self.opt *= m
+
+        #self.schedule(len(self.intervals)-1, self.intervals[-1].deadline)
+
+        print(self.opt)
+
+
+
+    def schedule(self, j, currentTime):
+        if j < 0:
+            return 0
+               
+        if self.opt[j] != -1:
+            return self.opt[j]
+        
+        #time it's actually scheduled
+        scheduled_time = currentTime - self.intervals[j].processing
+
+        #not compatible
+        if scheduled_time < 0:
+            self.opt[j] = 0
+            return 0
+
+        self.opt[j] = max(self.intervals[j].utility + self.schedule(self.compatible(j, scheduled_time), scheduled_time),
+                        self.schedule(j-1, currentTime))
+        
+
+        for i in range(m):
+            index = 0
+
+        return self.opt[j]
+
+
+    def compatible(self, j, currentTime):
+        #Start with jobs after current
+        j -= 1
+
+        while j >= 0:
+            if self.intervals[j].release + self.intervals[j].processing <= currentTime:
+                return j
+            j -= 1
+
+        return -1
 
 if __name__ == "__main__":
     np.random.seed(42)
@@ -136,6 +190,8 @@ if __name__ == "__main__":
         intervals.append(interval)
 
     mwis = MWIS(intervals)
+
+    ms = multipleScheduling(intervals, 3)
 
 
     interval_data['release_plus_processing'] = interval_data['Release Time'] + interval_data['Processing Time']
