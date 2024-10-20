@@ -207,3 +207,5 @@ if __name__ == "__main__":
     interval_data['release_plus_processing'] = interval_data['Release Time'] + interval_data['Processing Time']
 
     plot_intervals(interval_data, mwis.sol)
+    
+    # test
