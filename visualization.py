@@ -36,3 +36,15 @@ def plot_intervals(df, solution):
 
     plt.tight_layout()
     plt.show()
+
+
+
+def plot_envy(envy):
+    for agent in range(envy.shape[0]):
+        plt.plot(envy[agent], label=f'Agent {agent}')
+
+    plt.xlabel('Round')
+    plt.ylabel('Envy')
+    plt.title('Envy of Each Agent Over Successive Rounds')
+    plt.legend()
+    plt.show()

@@ -125,7 +125,7 @@ class multipleScheduling:
         currentTime = self.intervals[-1].deadline
         self.opt = np.full((len(self.intervals), currentTime, currentTime), -1)
 
-        self.schedule(len(self.intervals)-1, self.intervals[-1].deadline, self.intervals[-1].deadline)
+        self.schedule(len(self.intervals), self.intervals[-1].deadline, self.intervals[-1].deadline)
 
         print(self.opt)
 
@@ -149,9 +149,9 @@ class multipleScheduling:
             return 0
 
         #schedule job j on machine 1
-        m1 = self.intervals[j].utility[0] + self.schedule(self.compatible(j, scheduled_time1), scheduled_time1, currentTime2)
+        m1 = self.intervals[j].utility[0] + self.schedule(j-1, scheduled_time1, currentTime2)
         #schedule job j on machine 2
-        m2 = self.intervals[j].utility[1] + self.schedule(self.compatible(j, scheduled_time2), currentTime1, scheduled_time2)
+        m2 = self.intervals[j].utility[1] + self.schedule(j-1, currentTime1, scheduled_time2)
         #don't schedule on either
         next_job = self.schedule(j-1, currentTime1, currentTime2)
 
