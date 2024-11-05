@@ -1,5 +1,6 @@
 from matplotlib import pyplot as plt
 import pandas as pd
+import numpy as np
 
 def plot_intervals(df, solution):
     fig, axes = plt.subplots(1, 2)
@@ -47,4 +48,37 @@ def plot_envy(envy):
     plt.ylabel('Envy')
     plt.title('Envy of Each Agent Over Successive Rounds')
     plt.legend()
+    plt.show()
+
+
+def plot_success(ans):
+    rounds = [item[0] for item in ans]
+    success_percent = [item[1] for item in ans]
+
+
+    # Plotting the line chart
+    plt.figure(figsize=(10, 6))
+    plt.plot(rounds, success_percent, marker='o', color='b', label='Success %')
+
+    plt.xlabel('Round')
+    plt.ylabel('Success Percentage (%)')
+    plt.title('Success Percentage Over Rounds')
+    plt.legend()
+    plt.grid(True)
+    plt.show()
+
+def plot_items(data):
+    plt.figure(figsize=(10, 6))
+
+    for idx, ans in enumerate(data):
+        rounds = [item[0] for item in ans]
+        success_percent = [item[1] for item in ans]
+        plt.plot(rounds, success_percent, marker='o', label=f'Success % batch size {idx + 1}')
+
+    # Adding labels, title, and legend
+    plt.xlabel('Round')
+    plt.ylabel('Success Percentage (%)')
+    plt.title('Success Percentage Over Rounds for Multiple Runs')
+    plt.legend()
+    plt.grid(True)
     plt.show()

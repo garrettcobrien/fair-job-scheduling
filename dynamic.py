@@ -1,6 +1,8 @@
 import numpy as np
 from scipy.optimize import linear_sum_assignment
-from visualization import plot_envy
+from visualization import plot_envy, plot_success, plot_items
+from tqdm import tqdm
+
 
 
 class Dynamic:
@@ -78,6 +80,11 @@ class Dynamic:
 
             for agent in selection_order:
                 agentValues = np.ma.masked_array(valuations[agent], mask=availableItemsMask.__invert__())
+
+                #if all available items have been allocated break
+                if agentValues.count() == 0:
+                    break
+
                 chosenItem = agentValues.argmax()
                 
                 availableItemsMask[chosenItem] = False
@@ -139,6 +146,11 @@ class Dynamic:
 
             for agent in selection_order:
                 agentValues = np.ma.masked_array(valuations[agent], mask=availableItemsMask.__invert__())
+
+                #if all available items have been allocated break
+                if agentValues.count() == 0:
+                    break
+
                 chosenItem = agentValues.argmax()
                 
                 availableItemsMask[chosenItem] = False
@@ -173,12 +185,47 @@ class Dynamic:
                 print(envy)
         return envy
 
-dyn = Dynamic(rounds=100, agents=5, items=2, processing=10)
-#plot_envy(dyn.maxweightMatchings())
+dyn = Dynamic(rounds=1000, agents=3, items=1, processing=4)
+plot_envy(dyn.maxweightMatchings())
 
 dyn.set_verbose(False)
-#plot_envy(dyn.preferrential_choice())
+plot_envy(dyn.preferrential_choice())
 
-plot_envy(dyn.pref_with_processing())
+#plot_envy(dyn.pref_with_processing())
 
 
+class experiment:
+    def __init__(self, num_rounds):
+        self.num_rounds = num_rounds
+
+    def run_specifc_amount_of_rounds(self, agents, items, rounds):
+        successful_iterations = 0
+        for i in range(self.num_rounds):
+            dyn = Dynamic(rounds=rounds, agents=agents, items=items)
+            envy = dyn.preferrential_choice()
+            if max(envy[:, -1]) <= 0:
+                successful_iterations += 1
+        
+        if successful_iterations == 0:
+            return 0
+
+        return successful_iterations / self.num_rounds
+
+    def run_exp(self, round_cap, agents, items):
+        ans = []
+        for i in tqdm(range(1, round_cap)):
+            success_percent = self.run_specifc_amount_of_rounds(agents, items, i)
+            ans.append((i, success_percent))
+        return ans
+    
+    def run_item_search(self, agents, max_items,round_cap):
+        ans = []
+        for i in tqdm(range(1, max_items + 1)):
+            success_percent = self.run_exp(agents=agents, items=i, round_cap=round_cap)
+            ans.append(success_percent)
+        return ans
+    
+
+exp = experiment(100)
+#plot_success(exp.run_exp(round_cap=50, agents=5, items=1))
+#plot_items(exp.run_item_search(agents=5, max_items=5, round_cap=30))
