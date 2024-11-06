@@ -16,7 +16,6 @@ class Dynamic:
 
     def maxweightMatchings(self):
         # n * n, array, agents x bundles 
-        # value of the other allocations
         allocations = np.zeros((self.n, self.n))
         envy = np.zeros((self.n, self.rounds))
 
@@ -46,6 +45,7 @@ class Dynamic:
                 print(allocations)
 
             for agent in range(self.n):
+                # create mask to exclude agent's own allocation... to find max envy
                 A_mask = np.ma.masked_array(allocations[agent], mask=False)
                 A_mask.mask[agent] = True
                 max_excluding_k = A_mask.max()
@@ -184,13 +184,13 @@ class Dynamic:
                 print(envy)
         return envy
 
-dyn = Dynamic(rounds=1000, agents=7, items=6, processing=4)
+dyn = Dynamic(rounds=10, agents=7, items=6, processing=4)
 plot_envy(dyn.maxweightMatchings())
 
-dyn.set_verbose(False)
-plot_envy(dyn.preferrential_choice())
+# dyn.set_verbose(False)
+# plot_envy(dyn.preferrential_choice())
 
-plot_envy(dyn.pref_with_processing())
+# plot_envy(dyn.pref_with_processing())
 
 
 class experiment:
