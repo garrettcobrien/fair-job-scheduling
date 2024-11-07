@@ -1,7 +1,8 @@
 import numpy as np
 from scipy.optimize import linear_sum_assignment
-from visualization import plot_envy, plot_success, plot_items
+from sm_success_viz import plot_envy, plot_success, plot_items
 from tqdm import tqdm
+import matplotlib.pyplot as plt
 
 class Dynamic:
     def __init__(self, rounds, agents, items, processing=1):
@@ -192,7 +193,6 @@ class Dynamic:
 
 # plot_envy(dyn.pref_with_processing())
 
-
 class experiment:
     def __init__(self, num_rounds):
         self.num_rounds = num_rounds
@@ -217,14 +217,43 @@ class experiment:
             ans.append((i, success_percent))
         return ans
     
-    def run_item_search(self, agents, max_items,round_cap):
-        ans = []
-        for i in tqdm(range(1, max_items + 1)):
+    # run for 1 item in batch to max agents 
+    def run_item_search(self, agents, round_cap):
+        all_data = []
+        for i in tqdm(range(1, agents + 1)):
             success_percent = self.run_exp(agents=agents, items=i, round_cap=round_cap)
-            ans.append(success_percent)
-        return ans
-    
+            all_data.append(success_percent)
+        return all_data
 
 exp = experiment(100)
-#plot_success(exp.run_exp(round_cap=25, agents=5, items=1))
-plot_items(exp.run_item_search(agents=9, max_items=9, round_cap=30))
+num_agents = 15
+# collect all plots
+all_plots = []
+for i in range(1, num_agents + 1):  # Adjust range as needed
+    all_plots.append(exp.run_item_search(agents=i, round_cap=30))
+
+# plot all subplots together
+num_rows = (num_agents // 6) + 1
+num_cols = 6
+fig, axes = plt.subplots(num_rows, num_cols, figsize=(15, 8))
+
+axes = axes.flatten()
+
+for idx, data in enumerate(all_plots):
+    for batch_idx, ans in enumerate(data):
+        rounds = [item[0] for item in ans]
+        success_percent = [item[1] for item in ans]
+        axes[idx].plot(rounds, success_percent, marker='o', label=f'Success % batch size {batch_idx + 1}')
+    
+    # axes[idx].set_xlabel('Round')
+    # axes[idx].set_ylabel('Success Percentage (%)')
+    # axes[idx].set_title(f'Success Percentage for {idx + 1} Agents')
+    # axes[idx].legend()
+    axes[idx].grid(True)
+
+# hide unused subplots
+for ax in axes[len(all_plots):]:
+    ax.set_visible(False)
+
+plt.tight_layout()
+plt.show()
