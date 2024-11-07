@@ -1,7 +1,7 @@
 import numpy as np
 from scipy.optimize import linear_sum_assignment
 import matplotlib.pyplot as plt
-from visualization_copy import plot_envy
+from sm_3_methods_viz import plot_envy
 
 class Dynamic:
     def __init__(self, rounds, agents, items, processing=1):
