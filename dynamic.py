@@ -184,7 +184,7 @@ class Dynamic:
                 print(envy)
         return envy
 
-dyn = Dynamic(rounds=10, agents=7, items=6, processing=4)
+dyn = Dynamic(rounds=1000, agents=9, items=1, processing=4)
 plot_envy(dyn.maxweightMatchings())
 
 # dyn.set_verbose(False)
@@ -201,7 +201,7 @@ class experiment:
         successful_iterations = 0
         for i in range(self.num_rounds):
             dyn = Dynamic(rounds=rounds, agents=agents, items=items)
-            envy = dyn.preferrential_choice()
+            envy = dyn.maxweightMatchings()
             if max(envy[:, -1]) <= 0:
                 successful_iterations += 1
         
@@ -226,5 +226,5 @@ class experiment:
     
 
 exp = experiment(100)
-#plot_success(exp.run_exp(round_cap=50, agents=5, items=1))
-#plot_items(exp.run_item_search(agents=5, max_items=5, round_cap=30))
+#plot_success(exp.run_exp(round_cap=25, agents=5, items=1))
+plot_items(exp.run_item_search(agents=9, max_items=9, round_cap=30))
