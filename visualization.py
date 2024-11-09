@@ -39,7 +39,6 @@ def plot_intervals(df, solution):
     plt.show()
 
 
-
 def plot_envy(envy):
     for agent in range(envy.shape[0]):
         plt.plot(envy[agent], label=f'Agent {agent}')
@@ -79,6 +78,24 @@ def plot_items(data):
     plt.xlabel('Round')
     plt.ylabel('Success Percentage (%)')
     plt.title('Success Percentage Over Rounds for Multiple Runs')
+    plt.legend()
+    plt.grid(True)
+    plt.show()
+
+
+def plot_min_rounds(data):
+    plt.figure(figsize=(10, 6))
+
+    for idx, ans in enumerate(data):
+        rounds = [item[0] for item in ans]
+        success_percent = [item[1] for item in ans]
+        #idx is 2 because num agents is started at 2 vs 1
+        plt.plot(rounds, success_percent, marker='o', label=f'Number of Agents {idx + 2}')
+
+    # Adding labels, title, and legend
+    plt.xlabel('Number of Items')
+    plt.ylabel('Round Number')
+    plt.title('Number of rounds to produce EF Allocations with High Probability')
     plt.legend()
     plt.grid(True)
     plt.show()

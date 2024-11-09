@@ -1,6 +1,6 @@
 import numpy as np
 from scipy.optimize import linear_sum_assignment
-from visualization import plot_envy, plot_success, plot_items
+from visualization import plot_envy, plot_success, plot_items, plot_min_rounds
 from tqdm import tqdm
 
 class Dynamic:
@@ -193,9 +193,10 @@ class Dynamic:
 # plot_envy(dyn.pref_with_processing())
 
 
-class experiment:
+class ExperimentRunner:
     def __init__(self, num_rounds):
         self.num_rounds = num_rounds
+        self.success_minimum = 0.97
 
     def run_specific_amount_of_rounds(self, agents, items, rounds):
         successful_iterations = 0
@@ -204,11 +205,33 @@ class experiment:
             envy = dyn.maxweightMatchings()
             if max(envy[:, -1]) <= 0:
                 successful_iterations += 1
-        
+
         if successful_iterations == 0:
             return 0
 
         return successful_iterations / self.num_rounds
+
+    def determine_success_percent(self, agents, items, rounds):
+        '''
+        Determine if then given amount of rounds results in an EF allocation for n agents, and batch size b
+        '''
+        maximum_failed_rounds = self.num_rounds - self.num_rounds * self.success_minimum
+        successful_iterations = 0
+        for i in range(self.num_rounds):
+            dyn = Dynamic(rounds=rounds, agents=agents, items=items)
+            envy = dyn.maxweightMatchings()
+            if max(envy[:, -1]) <= 0:
+                successful_iterations += 1
+            
+            if i - successful_iterations >= maximum_failed_rounds:
+                return 0
+
+        if successful_iterations == 0:
+            return 0
+        
+        if successful_iterations / self.num_rounds < self.success_minimum:
+            return 0
+        return 1
 
     def run_exp(self, round_cap, agents, items):
         ans = []
@@ -217,14 +240,42 @@ class experiment:
             ans.append((i, success_percent))
         return ans
     
+    def run_exp_till_high_prob(self, round_cap, agents, items):
+        for round in range(1, round_cap):
+            success = self.determine_success_percent(agents, items, round)
+            if success == 1:
+                return (items, round)
+        return (items, -1)
+    
     def run_item_search(self, agents, max_items,round_cap):
         ans = []
         for i in tqdm(range(1, max_items + 1)):
             success_percent = self.run_exp(agents=agents, items=i, round_cap=round_cap)
             ans.append(success_percent)
         return ans
-    
 
-exp = experiment(100)
+    def round_min_search(self, agents, round_cap):
+        ans = []
+        for i in tqdm(range(1, agents + 1)):
+            high_prob_round = self.run_exp_till_high_prob(agents=agents, items=i, round_cap=round_cap)
+            ans.append(high_prob_round)
+        return ans
+
+    def run_agents(self, max_agents, round_cap):
+        ans = []
+        for num_agents in tqdm(range(2, max_agents + 1)):
+            round_minimums = self.round_min_search(agents=num_agents, round_cap=round_cap)
+            ans.append(round_minimums)
+        return ans
+
+
+exp = ExperimentRunner(100)
 #plot_success(exp.run_exp(round_cap=25, agents=5, items=1))
-plot_items(exp.run_item_search(agents=9, max_items=9, round_cap=30))
+#plot_items(exp.run_item_search(agents=9, max_items=9, round_cap=30))
+
+
+round_exp = ExperimentRunner(100)
+#print(round_exp.round_min_search(agents=9, round_cap=25))
+#plot_success(round_exp.round_min_search(agents=9, round_cap=1000))
+
+plot_min_rounds(round_exp.run_agents(max_agents=15, round_cap=1000))

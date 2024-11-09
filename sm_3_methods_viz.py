@@ -69,4 +69,4 @@ def plot_items(data):
     plt.title('Success Percentage Over Rounds for Multiple Runs')
     plt.legend()
     plt.grid(True)
-    plt.show() 
+    plt.show()
