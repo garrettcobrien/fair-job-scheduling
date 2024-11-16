@@ -2,6 +2,7 @@ import numpy as np
 from scipy.optimize import linear_sum_assignment
 from visualization import plot_envy, plot_success, plot_items, plot_min_rounds
 from tqdm import tqdm
+import pandas as pd
 
 class Dynamic:
     def __init__(self, rounds, agents, items, processing=1):
@@ -278,4 +279,13 @@ round_exp = ExperimentRunner(100)
 #print(round_exp.round_min_search(agents=9, round_cap=25))
 #plot_success(round_exp.round_min_search(agents=9, round_cap=1000))
 
-plot_min_rounds(round_exp.run_agents(max_agents=15, round_cap=1000))
+
+out = round_exp.run_agents(max_agents=15, round_cap=1000)
+print(out)
+dict_data = []
+for row in out:
+    row_dict = {tup[0]: tup[1] for tup in row}  # Use the first item as column, second as value
+    dict_data.append(row_dict)
+pd.DataFrame(dict_data).to_csv('fileout.csv')
+print(dict_data)
+plot_min_rounds(out)
