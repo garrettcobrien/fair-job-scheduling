@@ -11,8 +11,11 @@ preferSamAndNot = [0,0]
 
 firstGetsPref= 0
 secondGetsPref = 0
-    
-rounds = 10000000
+
+rounds = 1000000
+
+envy = np.zeros((2, rounds))
+
 for i in range(rounds):
     valuations = np.random.rand(2, 2)
     row_ind, col_ind = linear_sum_assignment(-valuations)
@@ -20,37 +23,30 @@ for i in range(rounds):
     max_weight = valuations[row_ind, col_ind].sum()
     matching = list(zip(row_ind, col_ind))
 
-    # print('valuations')
-    #print(valuations)
-    # print('matching')
-    #print(matching)
-    for i, match in enumerate(matching):
-        bundles[i] += valuations[match[0]][match[1]]
-        if i == 0:
+    for j, match in enumerate(matching):
+        bundles[j] += valuations[match[0]][match[1]]
+        if j == 0:
             firstAlloc = valuations[match[0]][match[1]]
         else:
             secondAlloc = valuations[match[0]][match[1]]
-    
-    # print('bundles')
-    #print(bundles)
 
-    #both players get what they want
+    envy[0, i] = max(valuations[1]) - firstAlloc
+    envy[1, i] = max(valuations[0]) - secondAlloc
+
+    # both players get what they want
     if np.argmax(valuations[0]) == matching[0][1] and np.argmax(valuations[1]) == matching[1][1]:
         #print('c1')
         preferDif[0] += firstAlloc
         preferDif[1] += secondAlloc
         difAllocs += 1
     else:
-        #print('c2')
-        #first player gets pref
+        # first player gets pref
         if np.argmax(valuations[0]) == matching[0][1]:
-            #print('c3')
             firstGetsPref += 1
             preferSamAndGet[0] += firstAlloc
             preferSamAndNot[1] += secondAlloc
-        #second player gets pref
+        # second player gets pref
         else:
-            #print('c4')
             secondGetsPref += 1
             preferSamAndNot[0] += firstAlloc
             preferSamAndGet[1] += secondAlloc
@@ -72,11 +68,6 @@ for i in range(rounds):
         preferSam[1] += secondAlloc
     '''
 
-
-
-
-
-
 sameAllocs = rounds - difAllocs
 
 print('avg item value allocated')
@@ -97,3 +88,9 @@ print(preferSamAndGet[1] / secondGetsPref, " ", preferSamAndNot[1] / firstGetsPr
 
 print('same allocs')
 print(sameAllocs)
+
+avg_envy_agent_0 = np.mean(envy[0])
+avg_envy_agent_1 = np.mean(envy[1])
+
+print('Average envy for agent 0:', avg_envy_agent_0)
+print('Average envy for agent 1:', avg_envy_agent_1)
