@@ -80,7 +80,7 @@ class Dynamic:
                 chosen_item = agent_values.argmax()
                 available_items[chosen_item] = False
 
-                # Allocate the chosen item to the agent
+                # allocate the chosen item to the agent
                 allocations[agent][chosen_item] += valuations[agent][chosen_item]
 
             if self.verbose == True:
@@ -96,6 +96,55 @@ class Dynamic:
                 A_mask.mask[agent] = True
                 max_excluding_k = A_mask.max()
                 envy[agent][round] = max_excluding_k - allocations[agent][agent]
+        return envy
+    
+    def randomSerialDictatorshipRRStyle(self):
+        # n * n, array, agents x bundles 
+        allocations = np.zeros((self.n, self.n))
+        envy = np.zeros((self.n, self.rounds))
+
+        # initialize the agent order
+        agent_order = np.arange(self.n)
+
+        for round in range(self.rounds):
+            # n agents, m items, n * m array
+            valuations = np.random.rand(self.n, self.m)
+
+            # rotate the agent order
+            agent_order = np.roll(agent_order, -1)
+
+            # track which items have been allocated
+            available_items = np.ones(self.m, dtype=bool)
+
+            for agent in agent_order:
+                # mask the unavailable items
+                agent_values = np.ma.masked_array(valuations[agent], mask=~available_items)
+
+                # if all items are allocated, break
+                if agent_values.count() == 0:
+                    break
+
+                # choose the item with the highest value
+                chosen_item = agent_values.argmax()
+                available_items[chosen_item] = False
+
+                # Allocate the chosen item to the agent
+                allocations[agent][chosen_item] += valuations[agent][chosen_item]
+
+            if self.verbose:
+                print('valuations')
+                print(valuations)
+                print("\nAgent order:", agent_order)
+                print('allocations')
+                print(allocations)
+
+            for agent in range(self.n):
+                # create mask to exclude agent's own allocation to find max envy
+                A_mask = np.ma.masked_array(allocations[agent], mask=False)
+                A_mask.mask[agent] = True
+                max_excluding_k = A_mask.max()
+                envy[agent][round] = max_excluding_k - allocations[agent][agent]
+            
         return envy
     
     def preferrential_choice(self):
