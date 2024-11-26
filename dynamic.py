@@ -53,6 +53,51 @@ class Dynamic:
                 envy[agent][round] = max_excluding_k - allocations[agent][agent]
         return envy
     
+    def randomSerialDictatorship(self):
+        # n * n, array, agents x bundles 
+        allocations = np.zeros((self.n, self.n))
+        envy = np.zeros((self.n, self.rounds))
+
+        for round in range(self.rounds):
+            # n agents, m items, n * m array
+            valuations = np.random.rand(self.n, self.m)
+
+            # Draw a random permutation of agents
+            agent_order = np.random.permutation(self.n)
+
+            # Track which items have been allocated
+            available_items = np.ones(self.m, dtype=bool)
+
+            for agent in agent_order:
+                # Mask the unavailable items
+                agent_values = np.ma.masked_array(valuations[agent], mask=~available_items)
+
+                # If all items are allocated, break
+                if agent_values.count() == 0:
+                    break
+
+                # Choose the item with the highest value
+                chosen_item = agent_values.argmax()
+                available_items[chosen_item] = False
+
+                # Allocate the chosen item to the agent
+                allocations[agent][chosen_item] += valuations[agent][chosen_item]
+
+            if self.verbose == True:
+                print('valuations')
+                print(valuations)
+                print("\nAgent order:", agent_order)
+                print('allocations')
+                print(allocations)
+
+            for agent in range(self.n):
+                # create mask to exclude agent's own allocation... to find max envy
+                A_mask = np.ma.masked_array(allocations[agent], mask=False)
+                A_mask.mask[agent] = True
+                max_excluding_k = A_mask.max()
+                envy[agent][round] = max_excluding_k - allocations[agent][agent]
+        return envy
+    
     def preferrential_choice(self):
         #n * n, array, agents x bundles
 
@@ -203,7 +248,8 @@ class ExperimentRunner:
         successful_iterations = 0
         for i in range(self.num_rounds):
             dyn = Dynamic(rounds=rounds, agents=agents, items=items)
-            envy = dyn.maxweightMatchings()
+            # envy = dyn.maxweightMatchings()
+            envy = dyn.randomSerialDictatorship()
             if max(envy[:, -1]) <= 0:
                 successful_iterations += 1
 
@@ -220,7 +266,8 @@ class ExperimentRunner:
         successful_iterations = 0
         for i in range(self.num_rounds):
             dyn = Dynamic(rounds=rounds, agents=agents, items=items)
-            envy = dyn.maxweightMatchings()
+            # envy = dyn.maxweightMatchings()
+            envy = dyn.randomSerialDictatorship()
             if max(envy[:, -1]) <= 0:
                 successful_iterations += 1
             
@@ -280,7 +327,7 @@ round_exp = ExperimentRunner(100)
 #plot_success(round_exp.round_min_search(agents=9, round_cap=1000))
 
 
-out = round_exp.run_agents(max_agents=15, round_cap=1000)
+out = round_exp.run_agents(max_agents=2, round_cap=100)
 print(out)
 dict_data = []
 for row in out:
