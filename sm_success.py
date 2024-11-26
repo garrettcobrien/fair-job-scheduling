@@ -5,13 +5,15 @@ from tqdm import tqdm
 import matplotlib.pyplot as plt
 from dynamic import Dynamic
 
-# dyn = Dynamic(rounds=1000, agents=9, items=1, processing=4)
-# plot_envy(dyn.maxweightMatchings())
+# dyn = Dynamic(rounds=1000, agents=2, items=2, processing=4)
+# plot_envy(dyn.randomSerialDictatorship())
 
 # dyn.set_verbose(False)
-# plot_envy(dyn.preferrential_choice())
+# plot_envy(dyn.randomSerialDictatorship())
 
 # plot_envy(dyn.pref_with_processing())
+
+################################## EXPERIMENT ###############################
 
 class experiment:
     def __init__(self, num_rounds):
@@ -46,12 +48,12 @@ class experiment:
             all_data.append(success_percent)
         return all_data
 
-exp = experiment(100)
+exp = experiment(1000)
 num_agents = 2
 # collect all plots
 all_plots = []
 for i in range(1, num_agents + 1):  # Adjust range as needed
-    all_plots.append(exp.run_item_search(agents=i, round_cap=100))
+    all_plots.append(exp.run_item_search(agents=i, round_cap=1000))
 
 # plot all subplots together
 num_rows = (num_agents // 6) + 1

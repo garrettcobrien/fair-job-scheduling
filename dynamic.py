@@ -62,21 +62,21 @@ class Dynamic:
             # n agents, m items, n * m array
             valuations = np.random.rand(self.n, self.m)
 
-            # Draw a random permutation of agents
+            # draw a random permutation of agents
             agent_order = np.random.permutation(self.n)
 
-            # Track which items have been allocated
+            # track which items have been allocated
             available_items = np.ones(self.m, dtype=bool)
 
             for agent in agent_order:
-                # Mask the unavailable items
+                # mask the unavailable items
                 agent_values = np.ma.masked_array(valuations[agent], mask=~available_items)
 
-                # If all items are allocated, break
+                # if all items are allocated, break
                 if agent_values.count() == 0:
                     break
 
-                # Choose the item with the highest value
+                # choose the item with the highest value
                 chosen_item = agent_values.argmax()
                 available_items[chosen_item] = False
 
