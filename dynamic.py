@@ -54,12 +54,12 @@ class Dynamic:
         return envy
     
     def randomSerialDictatorship(self):
-        #n * n, array, agents x bundles
+        # n * n, array, agents x bundles
         allocations = np.zeros((self.n, self.n))
         envy = np.zeros((self.n, self.rounds))
 
-        for round in range(self.rounds):
-            #n agents, m items, n * m array
+        for round in tqdm(range(self.rounds)):
+            # n agents, m items, n * m array
             valuations = np.random.rand(self.n, self.m)
 
             selection_order = np.random.permutation(self.n)
@@ -67,13 +67,12 @@ class Dynamic:
             # what's allocated
             availableItemsMask = np.ones(self.m, dtype=bool)
 
-
             matching = []
 
             for agent in selection_order:
                 agentValues = np.ma.masked_array(valuations[agent], mask=availableItemsMask.__invert__())
 
-                #if all available items have been allocated break
+                # if all available items have been allocated break
                 if agentValues.count() == 0:
                     break
 
@@ -89,12 +88,23 @@ class Dynamic:
 
                 for agent in range(self.n):
                     allocations[agent][bundle] += valuations[agent][item]
-
+    
             for agent in range(self.n):
                 A_mask = np.ma.masked_array(allocations[agent], mask=False)
                 A_mask.mask[agent] = True
                 max_excluding_k = A_mask.max()
                 envy[agent][round] = max_excluding_k - allocations[agent][agent]
+
+            # other_allocated_values = np.zeros(self.n, self.n)
+            # for agent in range(self.n):
+            #     for other_agent in range(self.n):
+            #         if other_agent != agent:
+            #             other_allocated_values[agent][other_agent] += allocations[other_agent][agent]
+            #       other_allocated_values[agent] /= self.m
+            #     other_allocated_values[agent] /= self.rounds
+
+            # print('other allocated values')
+            # print(other_allocated_values)
 
             if self.verbose == True:
                 print('matching', matching)
@@ -104,7 +114,9 @@ class Dynamic:
                 print(allocations)
                 print('envy')
                 print(envy)
-
+        normalized_allocations = allocations / self.rounds
+        print('normalized allocations')
+        print(normalized_allocations)
         return envy
 
     def randomSerialDictatorshipRRStyle(self):

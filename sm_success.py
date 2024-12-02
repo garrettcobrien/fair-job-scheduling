@@ -5,12 +5,14 @@ from tqdm import tqdm
 import matplotlib.pyplot as plt
 from dynamic import Dynamic
 
-dyn = Dynamic(rounds=1000, agents=2, items=2, processing=1)
-plot_envy(dyn.maxweightMatchings())
+num_agents = num_items = 75
+print(f'Running with {num_agents} agents and {num_items} items')
+dyn = Dynamic(rounds=10**5, agents=num_agents, items=num_items, processing=1)
+# plot_envy(dyn.maxweightMatchings())
 plot_envy(dyn.randomSerialDictatorship())
-plot_envy(dyn.randomSerialDictatorshipRRStyle())
+# plot_envy(dyn.randomSerialDictatorshipRRStyle())
 
-# dyn.set_verbose(False)
+# dyn.set_verbo  se(False)
 # plot_envy(dyn.randomSerialDictatorship())
 
 # plot_envy(dyn.pref_with_processing())
