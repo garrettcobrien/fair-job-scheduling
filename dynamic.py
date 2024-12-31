@@ -119,6 +119,87 @@ class Dynamic:
         print(normalized_allocations)
         return envy
 
+    def rsdWithProcessing(self):
+            allocations = np.zeros((self.n, self.n))
+            
+            envy = np.zeros((self.n, self.rounds))
+            
+            current_processing = np.zeros(self.n)
+
+            for round in tqdm(range(self.rounds)):
+                #reduce the processing time by one for all, or set to 0
+                current_processing = np.maximum(current_processing - 1, 0)
+
+                # n agents, m items, n * m array
+                #valuations = np.random.rand(self.n, self.m)
+
+                selection_order = np.random.permutation(self.n)
+                selection_order = selection_order[current_processing[selection_order] == 0]
+
+                numAvailableAgents = selection_order.size
+                valuations = np.random.rand(self.n, numAvailableAgents)
+
+
+                # what's allocated
+                availableItemsMask = np.ones(numAvailableAgents, dtype=bool)
+
+                #TODO fix this to be correct. Might need to change to exponential, right now it is uniform on 0-3
+                processing_times = np.random.randint(0, 4, size=numAvailableAgents)
+
+                matching = []
+
+                for agent in selection_order:
+                    agentValues = np.ma.masked_array(valuations[agent], mask=availableItemsMask.__invert__())
+
+                    # if all available items have been allocated break
+                    if agentValues.count() == 0:
+                        break
+
+                    chosenItem = agentValues.argmax()
+                    
+                    availableItemsMask[chosenItem] = False
+
+                    matching.append((agent, chosenItem))
+
+                    current_processing[agent] = processing_times[chosenItem]
+
+                for match in matching:
+                    bundle = match[0]
+                    item = match[1]
+
+                    for agent in range(self.n):
+                        allocations[agent][bundle] += valuations[agent][item]
+        
+                for agent in range(self.n):
+                    A_mask = np.ma.masked_array(allocations[agent], mask=False)
+                    A_mask.mask[agent] = True
+                    max_excluding_k = A_mask.max()
+                    envy[agent][round] = max_excluding_k - allocations[agent][agent]
+
+                # other_allocated_values = np.zeros(self.n, self.n)
+                # for agent in range(self.n):
+                #     for other_agent in range(self.n):
+                #         if other_agent != agent:
+                #             other_allocated_values[agent][other_agent] += allocations[other_agent][agent]
+                #       other_allocated_values[agent] /= self.m
+                #     other_allocated_values[agent] /= self.rounds
+
+                # print('other allocated values')
+                # print(other_allocated_values)
+
+                if self.verbose == True:
+                    print('matching', matching)
+                    print('valuations')
+                    print(valuations)
+                    print('allocations')
+                    print(allocations)
+                    print('envy')
+                    print(envy)
+            normalized_allocations = allocations / self.rounds
+            print('normalized allocations')
+            print(normalized_allocations)
+            return envy
+
     def randomSerialDictatorshipRRStyle(self):
         #n * n, array, agents x bundles
         allocations = np.zeros((self.n, self.n))
@@ -307,13 +388,16 @@ class Dynamic:
                 print(envy)
         return envy
 
-# dyn = Dynamic(rounds=1000, agents=9, items=1, processing=4)
+dyn = Dynamic(rounds=50, agents=3, items=2, processing=1)
+plot_envy(dyn.rsdWithProcessing())
+
 # plot_envy(dyn.maxweightMatchings())
 
 # dyn.set_verbose(False)
 # plot_envy(dyn.preferrential_choice())
 
 # plot_envy(dyn.pref_with_processing())
+
 
 
 class ExperimentRunner:
